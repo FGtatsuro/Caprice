@@ -1,0 +1,9 @@
+include README.rst LICENSE
+include tox.ini .travis.yml
+include run.py
+include Procfile runtime.txt
+include requirements.txt
+recursive-include caprice *
+recursive-include tests *
+recursive-exclude caprice *.pyc
+recursive-exclude tests *.pyc
