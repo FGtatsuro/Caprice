@@ -13,6 +13,6 @@ def client(request):
     client = app.test_client()
     return client
 
-def test_index(client):
-    res = client.get('/', follow_redirects=True)
-    assert b'This is the index page.' in res.data
+def test_schema(client):
+    res = client.get('/api/schemas', follow_redirects=True)
+    assert res.status_code == 200
