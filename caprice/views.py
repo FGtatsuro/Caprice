@@ -10,3 +10,7 @@ api = Blueprint('api', __name__)
 @api.route('/schemas')
 def schema():
     return ''
+
+@api.route('/resources')
+def resource():
+    return ''

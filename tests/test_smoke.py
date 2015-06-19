@@ -16,3 +16,7 @@ def client(request):
 def test_schema(client):
     res = client.get('/api/schemas', follow_redirects=True)
     assert res.status_code == 200
+
+def test_resource(client):
+    res = client.get('/api/resources', follow_redirects=True)
+    assert res.status_code == 200
