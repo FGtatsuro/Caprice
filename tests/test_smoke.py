@@ -20,3 +20,7 @@ def test_schema(client):
 def test_resource(client):
     res = client.get('/api/resources', follow_redirects=True)
     assert res.status_code == 200
+
+def test_lock(client):
+    res = client.get('/api/locks', follow_redirects=True)
+    assert res.status_code == 200

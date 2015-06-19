@@ -14,3 +14,7 @@ def schema():
 @api.route('/resources')
 def resource():
     return ''
+
+@api.route('/locks')
+def lock():
+    return ''
