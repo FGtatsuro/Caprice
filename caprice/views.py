@@ -1,20 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, Response
+from flask import render_template, redirect, url_for, request
 
 from .models import *
 
 api = Blueprint('api', __name__)
 
-@api.route('/schemas')
+@api.route('/schemas', methods=['GET', 'POST'])
 def schema():
-    return ''
+    res = Response('')
+    if request.method == 'POST':
+        res.status_code = 201
+    return res
 
-@api.route('/resources')
+@api.route('/resources', methods=['GET', 'POST'])
 def resource():
-    return ''
+    res = Response('')
+    if request.method == 'POST':
+        res.status_code = 201
+    return res
 
-@api.route('/locks')
+@api.route('/locks', methods=['GET', 'POST'])
 def lock():
-    return ''
+    res = Response('')
+    if request.method == 'POST':
+        res.status_code = 201
+    return res

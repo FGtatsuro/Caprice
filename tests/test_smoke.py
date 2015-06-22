@@ -17,10 +17,19 @@ def test_schema(client):
     res = client.get('/api/schemas', follow_redirects=True)
     assert res.status_code == 200
 
+    res = client.post('/api/schemas', follow_redirects=True)
+    assert res.status_code == 201
+
 def test_resource(client):
     res = client.get('/api/resources', follow_redirects=True)
     assert res.status_code == 200
 
+    res = client.post('/api/resources', follow_redirects=True)
+    assert res.status_code == 201
+
 def test_lock(client):
     res = client.get('/api/locks', follow_redirects=True)
     assert res.status_code == 200
+
+    res = client.post('/api/locks', follow_redirects=True)
+    assert res.status_code == 201
