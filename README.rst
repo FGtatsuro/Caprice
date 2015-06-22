@@ -3,6 +3,27 @@ Caprice
 
 JSON-resource manager
 
+API
+---
+
+EndPoint: /api
+
+- GET /schemas
+- POST /schemas
+- GET /schemas/<id>
+- DELETE /schemas/<id>
+
+- GET /resources
+- POST /resources
+- GET /resources/<id>
+- PUT /resources/<id>
+- DELETE /resources/<id>
+
+- GET /locks
+- POST /locks
+- GET /locks/<id>
+- DELETE /locks/<id>
+
 Run the application on local
 ----------------------------
 
