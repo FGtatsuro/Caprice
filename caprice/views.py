@@ -30,7 +30,7 @@ def resource():
         res.status_code = 201
     return res
 
-@api.route('/resources/<int:_id>', methods=['GET', 'DELETE'])
+@api.route('/resources/<int:_id>', methods=['GET', 'PUT', 'DELETE'])
 def resource_id(_id):
     res = Response('')
     res.data = str(_id)

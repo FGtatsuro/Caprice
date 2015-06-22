@@ -24,6 +24,8 @@ def test_schema(client):
     assert res.data == b'1'
     res = client.delete('/api/schemas/1', follow_redirects=True)
     assert res.status_code == 204
+    res = client.put('/api/schemas/1', follow_redirects=True)
+    assert res.status_code == 405
 
 def test_resource(client):
     res = client.get('/api/resources', follow_redirects=True)
@@ -36,6 +38,8 @@ def test_resource(client):
     assert res.data == b'1'
     res = client.delete('/api/resources/1', follow_redirects=True)
     assert res.status_code == 204
+    res = client.put('/api/resources/1', follow_redirects=True)
+    assert res.status_code == 200
 
 def test_lock(client):
     res = client.get('/api/locks', follow_redirects=True)
@@ -48,3 +52,5 @@ def test_lock(client):
     assert res.data == b'1'
     res = client.delete('/api/locks/1', follow_redirects=True)
     assert res.status_code == 204
+    res = client.put('/api/locks/1', follow_redirects=True)
+    assert res.status_code == 405
