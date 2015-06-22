@@ -1,3 +1,5 @@
+|Build Status|
+
 Caprice
 ===========
 
@@ -40,3 +42,6 @@ Run the application on Heroku
     $ git init && git add . && git commit -m 'init'
     $ heroku create $(yourappname)
     $ git push heroku master
+
+.. |Build Status| image:: https://travis-ci.org/FGtatsuro/Caprice.svg?branch=master
+   :target: https://travis-ci.org/FGtatsuro/Caprice
