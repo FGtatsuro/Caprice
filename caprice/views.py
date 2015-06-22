@@ -15,6 +15,12 @@ def schema():
         res.status_code = 201
     return res
 
+@api.route('/schemas/<int:_id>', methods=['GET'])
+def schema_id(_id):
+    res = Response('')
+    res.data = str(_id)
+    return res
+
 @api.route('/resources', methods=['GET', 'POST'])
 def resource():
     res = Response('')
@@ -22,9 +28,21 @@ def resource():
         res.status_code = 201
     return res
 
+@api.route('/resources/<int:_id>', methods=['GET'])
+def resource_id(_id):
+    res = Response('')
+    res.data = str(_id)
+    return res
+
 @api.route('/locks', methods=['GET', 'POST'])
 def lock():
     res = Response('')
     if request.method == 'POST':
         res.status_code = 201
+    return res
+
+@api.route('/locks/<int:_id>', methods=['GET'])
+def lock_id(_id):
+    res = Response('')
+    res.data = str(_id)
     return res
