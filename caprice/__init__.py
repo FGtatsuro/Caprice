@@ -18,6 +18,6 @@ def _create_app(setting):
     if app.debug:
         DebugToolbarExtension(app)
 
-    from .views import main
-    app.register_blueprint(main)
+    from .views import api
+    app.register_blueprint(api, url_prefix='/api')
     return app
