@@ -40,7 +40,8 @@ setup(name='Caprice',
           'setuptools',
           'Flask',
           'Flask-DebugToolbar',
-          'PasteDeploy'
+          'PasteDeploy',
+          'jsonschema'
       ],
       # 'setup.py test' needs that virtualenv is installed in project.
       tests_require=[

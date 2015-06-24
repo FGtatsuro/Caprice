@@ -3,3 +3,4 @@ Flask-DebugToolbar
 tox
 uwsgi
 PasteDeploy
+jsonschema
