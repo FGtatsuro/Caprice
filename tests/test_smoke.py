@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
+
 import pytest
 
 from caprice import _create_app
@@ -16,8 +18,52 @@ def client(request):
 def test_schema(client):
     res = client.get('/api/schemas', follow_redirects=True)
     assert res.status_code == 200
-    res = client.post('/api/schemas', follow_redirects=True)
+
+    # No header
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}))
+    assert res.status_code == 400 
+    # not 'application/xxx+json'
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'text/plain'})
+    assert res.status_code == 400 
+    # 'application/json'
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
     assert res.status_code == 201
+    # 'application/xxxx+json'
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 201
+
+    # No date
+    res = client.post(
+            '/api/schemas',
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    # Empty date. None/str/json
+    res = client.post(
+            '/api/schemas', 
+            data=None,
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    res = client.post(
+            '/api/schemas', 
+            data='',
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    res = client.post(
+            '/api/schemas',
+            data=json.dumps({}),
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
 
     res = client.get('/api/schemas/1', follow_redirects=True)
     assert res.status_code == 200

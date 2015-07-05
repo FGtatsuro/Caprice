@@ -3,6 +3,7 @@
 
 from flask import Blueprint, Response
 from flask import render_template, redirect, url_for, request
+from jsonschema import Draft4Validator, SchemaError
 
 from .models import *
 
@@ -12,7 +13,17 @@ api = Blueprint('api', __name__)
 def schema():
     res = Response('')
     if request.method == 'POST':
-        res.status_code = 201
+        schema = request.get_json()
+        if not schema:
+            res.status_code = 400
+            return res
+        try:
+            Draft4Validator.check_schema(schema)
+            # TODO: save schema in DB
+            res.status_code = 201
+        except SchemaError as e:
+            # TODO: logger
+            res.status_code = 400
     return res
 
 @api.route('/schemas/<int:_id>', methods=['GET', 'DELETE'])
