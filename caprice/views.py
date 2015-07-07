@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import uuid
+
 from flask import Blueprint, Response
-from flask import render_template, redirect, url_for, request
+from flask import jsonify, render_template, redirect, url_for, request
 from jsonschema import Draft4Validator, SchemaError
 
 from .models import *
@@ -11,18 +13,24 @@ api = Blueprint('api', __name__)
 
 @api.route('/schemas', methods=['GET', 'POST'])
 def schema():
-    res = Response('')
+    # TODO: controller is needed?
+    if request.method == 'GET':
+        res = Response('')
     if request.method == 'POST':
-        schema = request.get_json()
+        schema = request.get_json(silent=True)
         if not schema:
+            # TODO: Response generator
+            res = jsonify({'error': {'message': 'Request is invalid.'}})
             res.status_code = 400
             return res
         try:
             Draft4Validator.check_schema(schema)
             # TODO: save schema in DB
+            res = jsonify({'id': str(uuid.uuid4())})
             res.status_code = 201
         except SchemaError as e:
             # TODO: logger
+            res = jsonify({'error': {'message': 'Request schema is invalid.'}})
             res.status_code = 400
     return res
 
