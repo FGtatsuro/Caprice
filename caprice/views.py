@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
 import uuid
 
 from flask import Blueprint, Response
@@ -25,8 +26,11 @@ def schema():
             return res
         try:
             Draft4Validator.check_schema(schema)
-            # TODO: save schema in DB
-            res = jsonify({'id': str(uuid.uuid4())})
+            # TODO: JSON-Model mapping
+            _id = str(uuid.uuid4())
+            model = Schema(id=_id, body=json.dumps(schema))
+            model.save()
+            res = jsonify({'id': _id})
             res.status_code = 201
         except SchemaError as e:
             # TODO: logger
