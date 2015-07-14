@@ -29,6 +29,8 @@ def schema():
             # TODO: JSON-Model mapping
             _id = str(uuid.uuid4())
             model = Schema(id=_id, body=json.dumps(schema))
+            # TODO: logger
+            print(model)
             model.save()
             res = jsonify({'id': _id})
             res.status_code = 201

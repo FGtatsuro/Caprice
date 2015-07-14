@@ -22,7 +22,7 @@ class Schema(Base):
         self.body = body
 
     def __repr__(self):
-        return '<Schema: {!r}>'.format(self.body)
+        return '<{!s}: {!r}>'.format(self.__class__.__name__, self.body)
 
     # TODO: Use contextmanager. Ref. http://docs.sqlalchemy.org/en/rel_1_0/orm/session_basics.html
     def save(self):
@@ -33,6 +33,7 @@ class Schema(Base):
             s.commit()
         except:
             s.rollback()
+            # TODO: Error message
             raise RuntimeError('')
         finally:
             # TODO: logger
