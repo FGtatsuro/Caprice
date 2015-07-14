@@ -10,7 +10,11 @@ from .config import settings
 from .db import init as init_db
 
 def create_app(global_config, **local_conf):
-    return _create_app(settings[local_conf['config_key']])
+    # TODO: Use PasteDeploy config directly.
+    conf = settings[local_conf['config_key']]
+    conf.DATABASE_URL = local_conf['database_url']
+    return _create_app(conf)
+    #return _create_app(settings[local_conf['config_key']])
 
 def _create_app(setting):
     app = Flask(__name__)
