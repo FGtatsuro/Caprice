@@ -7,13 +7,22 @@ import json
 import pytest
 
 from caprice import _create_app
+from caprice.models import Schema
+from caprice.db import Session
 
 @pytest.fixture
 def client(request):
     class TestConfig(object):
         TESTING = True
+        DATABASE_URL = 'sqlite:///caprice_sqlite.db'
     app = _create_app(TestConfig)
     client = app.test_client()
+
+    # CleanUp
+    # TODO: should use mock for DB?
+    s = Session()
+    s.query(Schema).delete()
+    s.commit()
     return client
 
 def test_schema(client):
