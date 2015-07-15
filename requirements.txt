@@ -3,3 +3,6 @@ Flask-DebugToolbar
 tox
 uwsgi
 PasteDeploy
+jsonschema
+SQLAlchemy
+psycopg2

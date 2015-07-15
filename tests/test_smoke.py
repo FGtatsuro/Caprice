@@ -1,23 +1,101 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import uuid
+import json
+
 import pytest
 
 from caprice import _create_app
+from caprice.models import Schema
+from caprice.db import Session
 
 @pytest.fixture
 def client(request):
     class TestConfig(object):
         TESTING = True
+        DATABASE_URL = 'sqlite:///caprice_sqlite.db'
     app = _create_app(TestConfig)
     client = app.test_client()
+
+    # CleanUp
+    # TODO: should use mock for DB?
+    s = Session()
+    s.query(Schema).delete()
+    s.commit()
     return client
 
 def test_schema(client):
     res = client.get('/api/schemas', follow_redirects=True)
     assert res.status_code == 200
-    res = client.post('/api/schemas', follow_redirects=True)
+
+    # No header
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}))
+    assert res.status_code == 400 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    # not 'application/xxx+json'
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'text/plain'})
+    assert res.status_code == 400 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    # 'application/json'
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
     assert res.status_code == 201
+    assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
+    # 'application/xxxx+json'
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 201
+    assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
+    # Violation of JSON Schema Draft4
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({"type": "obj"}), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request schema is invalid.'}})
+
+    # No date
+    res = client.post(
+            '/api/schemas',
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    # Empty date. None/str/json
+    res = client.post(
+            '/api/schemas', 
+            data=None,
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    res = client.post(
+            '/api/schemas', 
+            data='',
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    res = client.post(
+            '/api/schemas',
+            data=json.dumps({}),
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
 
     res = client.get('/api/schemas/1', follow_redirects=True)
     assert res.status_code == 200

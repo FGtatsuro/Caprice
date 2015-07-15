@@ -40,7 +40,10 @@ setup(name='Caprice',
           'setuptools',
           'Flask',
           'Flask-DebugToolbar',
-          'PasteDeploy'
+          'PasteDeploy',
+          'jsonschema',
+          'SQLAlchemy',
+          'psycopg2',
       ],
       # 'setup.py test' needs that virtualenv is installed in project.
       tests_require=[
