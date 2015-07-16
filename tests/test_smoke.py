@@ -25,9 +25,24 @@ def client(request):
     s.commit()
     return client
 
-def test_schema(client):
-    res = client.get('/api/schemas', follow_redirects=True)
-    assert res.status_code == 200
+def test_schema_registration(client):
+
+    # 'application/json'
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 201
+    assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
+    # 'application/xxxx+json'
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 201
+    assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
+
+def test_schema_registration_invalid_header(client):
 
     # No header
     res = client.post(
@@ -44,20 +59,9 @@ def test_schema(client):
     assert res.status_code == 400 
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'Request is invalid.'}})
-    # 'application/json'
-    res = client.post(
-            '/api/schemas', 
-            data=json.dumps({'aaa':1}), 
-            headers={'content-type':'application/json'})
-    assert res.status_code == 201
-    assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
-    # 'application/xxxx+json'
-    res = client.post(
-            '/api/schemas', 
-            data=json.dumps({'aaa':1}), 
-            headers={'content-type':'application/caprise+json'})
-    assert res.status_code == 201
-    assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
+
+def test_schema_registration_invalid_data(client):
+
     # Violation of JSON Schema Draft4
     res = client.post(
             '/api/schemas', 
@@ -66,7 +70,6 @@ def test_schema(client):
     assert res.status_code == 400
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'Request schema is invalid.'}})
-
     # No date
     res = client.post(
             '/api/schemas',
@@ -97,6 +100,11 @@ def test_schema(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'Request is invalid.'}})
 
+def test_schema_list(client):
+    res = client.get('/api/schemas', follow_redirects=True)
+    assert res.status_code == 200
+
+def test_schema_get(client):
     res = client.get('/api/schemas/1', follow_redirects=True)
     assert res.status_code == 200
     assert res.data == b'1'
