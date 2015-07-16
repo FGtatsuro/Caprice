@@ -22,7 +22,7 @@ class Schema(Base):
         self.body = body
 
     def __repr__(self):
-        return '<{!s}: {!r}>'.format(self.__class__.__name__, self.body)
+        return "<{0}: '{1}'>".format(self.__class__.__name__, self.body)
 
     # TODO: Use contextmanager. Ref. http://docs.sqlalchemy.org/en/rel_1_0/orm/session_basics.html
     def save(self):
