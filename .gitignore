@@ -54,4 +54,4 @@ coverage.xml
 docs/_build/
 
 # For local tests
-caprice_sqlite.db
+caprice*.db
