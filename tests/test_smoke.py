@@ -103,6 +103,31 @@ def test_schema_registration_invalid_data(client):
 def test_schema_list(client):
     res = client.get('/api/schemas', follow_redirects=True)
     assert res.status_code == 200
+    assert len(json.loads(res.data.decode('utf-8'))['schemas']) == 0
+
+    schema = {'aaa':1}
+    client.post(
+            '/api/schemas', 
+            data=json.dumps(schema), 
+            headers={'content-type':'application/caprise+json'})
+
+    res = client.get('/api/schemas', follow_redirects=True)
+    assert res.status_code == 200
+    schemas = json.loads(res.data.decode('utf-8'))['schemas']
+    assert len(schemas) == 1
+    # TODO: JSONSchema validation
+    assert schemas[0]['id']
+    assert json.loads(schemas[0]['body']) == schema
+
+    schema = {'bbb':1}
+    client.post(
+            '/api/schemas', 
+            data=json.dumps(schema), 
+            headers={'content-type':'application/caprise+json'})
+    res = client.get('/api/schemas', follow_redirects=True)
+    assert res.status_code == 200
+    schemas = json.loads(res.data.decode('utf-8'))['schemas']
+    assert len(schemas) == 2
 
 def test_schema_get(client):
     res = client.get('/api/schemas/1', follow_redirects=True)

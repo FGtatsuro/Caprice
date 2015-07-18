@@ -16,7 +16,9 @@ api = Blueprint('api', __name__)
 def schema():
     # TODO: controller is needed?
     if request.method == 'GET':
-        res = Response('')
+        # TODO: JSON-Model mapping
+        # TODO: Pagination
+        res = jsonify({'schemas': [{'id': s.id, 'body': s.body} for s in Schema.query.all()]})
     if request.method == 'POST':
         schema = request.get_json(silent=True)
         if not schema:
