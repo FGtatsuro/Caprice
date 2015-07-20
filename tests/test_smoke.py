@@ -14,7 +14,7 @@ from caprice.db import Session
 def client(request):
     class TestConfig(object):
         TESTING = True
-        DATABASE_URL = 'sqlite:///caprice_sqlite.db'
+        DATABASE_URL = 'sqlite:///caprice_test.db'
     app = _create_app(TestConfig)
     client = app.test_client()
 
