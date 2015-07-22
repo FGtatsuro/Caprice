@@ -19,28 +19,27 @@ def schema():
         # TODO: JSON-Model mapping
         # TODO: Pagination
         res = jsonify({'schemas': [{'id': s.id, 'body': s.body} for s in Schema.query.all()]})
+        return res
     if request.method == 'POST':
-        schema = request.get_json(silent=True)
-        if not schema:
-            # TODO: Response generator
+        body = request.get_json(silent=True)
+        # TODO: Sophisticated error handling
+        if not body:
             res = jsonify({'error': {'message': 'Request is invalid.'}})
             res.status_code = 400
             return res
         try:
-            Draft4Validator.check_schema(schema)
-            # TODO: JSON-Model mapping
             _id = str(uuid.uuid4())
-            model = Schema(id=_id, body=json.dumps(schema))
+            schema = Schema(id=_id, json=request.get_json(silent=True))
             # TODO: logger
-            print(model)
-            model.save()
+            print(schema)
+            schema.save()
+            # TODO: JSON-Model mapping
             res = jsonify({'id': _id})
             res.status_code = 201
-        except SchemaError as e:
-            # TODO: logger
-            res = jsonify({'error': {'message': 'Request schema is invalid.'}})
+        except ValueError as e:
+            res = jsonify({'error': {'message': str(e)}})
             res.status_code = 400
-    return res
+        return res
 
 @api.route('/schemas/<int:_id>', methods=['GET', 'DELETE'])
 def schema_id(_id):

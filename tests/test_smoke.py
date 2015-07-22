@@ -69,7 +69,7 @@ def test_schema_registration_invalid_data(client):
             headers={'content-type':'application/caprise+json'})
     assert res.status_code == 400
     assert (json.loads(res.data.decode('utf-8')) 
-            == {'error': {'message': 'Request schema is invalid.'}})
+            == {'error': {'message': 'Schema is invalid.'}})
     # No date
     res = client.post(
             '/api/schemas',
