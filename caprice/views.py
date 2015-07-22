@@ -29,7 +29,7 @@ def schema():
             return res
         try:
             _id = str(uuid.uuid4())
-            schema = Schema(id=_id, json=request.get_json(silent=True))
+            schema = Schema(id=_id, json=body)
             # TODO: logger
             print(schema)
             schema.save()
