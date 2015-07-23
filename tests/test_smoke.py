@@ -117,7 +117,7 @@ def test_schema_list(client):
     assert len(schemas) == 1
     # TODO: JSONSchema validation
     assert schemas[0]['id']
-    assert json.loads(schemas[0]['body']) == schema
+    assert schemas[0]['body'] == schema
 
     schema = {'bbb':1}
     client.post(

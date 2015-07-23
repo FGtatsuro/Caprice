@@ -18,7 +18,7 @@ def schema():
     if request.method == 'GET':
         # TODO: JSON-Model mapping
         # TODO: Pagination
-        res = jsonify({'schemas': [{'id': s.id, 'body': s.body} for s in Schema.query.all()]})
+        res = jsonify({'schemas': [{'id': s.id, 'body': s.json} for s in Schema.query.all()]})
         return res
     if request.method == 'POST':
         body = request.get_json(silent=True)
