@@ -12,7 +12,7 @@ from jsonschema import Draft4Validator, SchemaError
 from .models import *
 
 # Handlers of this logger depends on Flask application
-logger = getLogger(__name__.split('.')[0])
+logger = getLogger(__name__)
 
 api = Blueprint('api', __name__)
 
