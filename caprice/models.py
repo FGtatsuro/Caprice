@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import json
+from logging import getLogger
 
 from jsonschema import Draft4Validator, SchemaError
 from sqlalchemy import Column, String
 
 from .db import Base, Session
+
+# Handlers of this logger depends on Flask application
+logger = getLogger(__name__.split('.')[0])
 
 __all__ = ['Schema']
 
@@ -29,12 +33,10 @@ class Schema(Base):
 
     @property
     def json(self):
-        # TODO: logger
         return json.loads(self.body)
 
     @json.setter
     def json(self, value):
-        # TODO: logger
         self.body = json.dumps(value)
 
     def __repr__(self):
@@ -45,14 +47,15 @@ class Schema(Base):
         s = Session()
         s.add(self)
         try:
-            # TODO: logger
+            logger.debug('Commit: {0}'.format(self))
             s.commit()
         except:
+            logger.error('Rollback: {0}'.format(self))
             s.rollback()
             # TODO: Error message
             raise RuntimeError('')
         finally:
-            # TODO: logger
+            logger.debug('Close: {0}'.format(self.__class__.__name__))
             s.close()
 
     def _validate(self):

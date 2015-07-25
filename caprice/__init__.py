@@ -18,6 +18,8 @@ def create_app(global_config, **local_conf):
 
 def _create_app(setting):
     app = Flask(__name__)
+    # Init logger in Flask application
+    app.logger
 
     app.config.from_object(setting)
     if app.debug:
