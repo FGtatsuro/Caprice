@@ -3,12 +3,16 @@
 
 import json
 import uuid
+from logging import getLogger
 
 from flask import Blueprint, Response
 from flask import jsonify, render_template, redirect, url_for, request
 from jsonschema import Draft4Validator, SchemaError
 
 from .models import *
+
+# Handlers of this logger depends on Flask application
+logger = getLogger(__name__.split('.')[0])
 
 api = Blueprint('api', __name__)
 
@@ -30,8 +34,6 @@ def schema():
         try:
             _id = str(uuid.uuid4())
             schema = Schema(id=_id, json=body)
-            # TODO: logger
-            print(schema)
             schema.save()
             # TODO: JSON-Model mapping
             res = jsonify({'id': _id})
