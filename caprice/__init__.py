@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from logging import DEBUG
 
 from flask import Flask
 from flask_debugtoolbar import DebugToolbarExtension
@@ -18,8 +19,9 @@ def create_app(global_config, **local_conf):
 
 def _create_app(setting):
     app = Flask(__name__)
-    # Init logger in Flask application
-    app.logger
+
+    app.logger.setLevel(DEBUG)
+    app.logger.debug('Init root logger.')
 
     app.config.from_object(setting)
     if app.debug:
