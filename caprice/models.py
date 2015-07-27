@@ -49,11 +49,10 @@ class Schema(Base):
         try:
             logger.debug('Commit: {0}'.format(self))
             s.commit()
-        except:
-            logger.error('Rollback: {0}'.format(self))
+        except Exception as e:
+            logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
             s.rollback()
-            # TODO: Error message
-            raise RuntimeError('')
+            raise ValueError('This schema ID is already used.') from e
         finally:
             logger.debug('Close: {0}'.format(self.__class__.__name__))
             s.close()
