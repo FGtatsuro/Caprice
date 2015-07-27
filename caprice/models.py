@@ -52,7 +52,7 @@ class Schema(Base):
         except Exception as e:
             logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
             s.rollback()
-            raise ValueError('This schema ID is already used.') from e
+            raise ValueError('This schema ID is already used.')
         finally:
             logger.debug('Close: {0}'.format(self.__class__.__name__))
             s.close()
