@@ -43,11 +43,29 @@ def schema():
             res.status_code = 400
         return res
 
-@api.route('/schemas/<int:_id>', methods=['GET', 'DELETE'])
+@api.route('/schemas/<string:_id>', methods=['GET', 'PUT', 'DELETE'])
 def schema_id(_id):
-    res = Response('')
-    res.data = str(_id)
+    if request.method == 'GET':
+        res = Response('')
+        res.data = _id
+        res.status_code = 200
+    # TODO: DRY. controller is needed?
+    if request.method == 'PUT':
+        body = request.get_json(silent=True)
+        if not body:
+            res = jsonify({'error': {'message': 'Request is invalid.'}})
+            res.status_code = 400
+            return res
+        try:
+            schema = Schema(id=_id, json=body)
+            schema.save()
+            res = jsonify({'id': _id})
+            res.status_code = 201
+        except ValueError as e:
+            res = jsonify({'error': {'message': str(e)}})
+            res.status_code = 400
     if request.method == 'DELETE':
+        res = Response('')
         res.status_code = 204
     return res
 
