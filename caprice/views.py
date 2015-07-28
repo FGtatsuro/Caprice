@@ -46,9 +46,14 @@ def schema():
 @api.route('/schemas/<string:_id>', methods=['GET', 'PUT', 'DELETE'])
 def schema_id(_id):
     if request.method == 'GET':
-        res = Response('')
-        res.data = _id
+        schema = Schema.query.filter(Schema.id==_id).first()
+        if not schema:
+            res = jsonify({'error': {'message': "Schema isn't found."}})
+            res.status_code = 404
+            return res
+        res = jsonify(schema.json)
         res.status_code = 200
+        return res
     # TODO: DRY. controller is needed?
     if request.method == 'PUT':
         body = request.get_json(silent=True)

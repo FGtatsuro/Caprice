@@ -186,11 +186,24 @@ def test_schema_list(client):
     assert len(schemas) == 2
 
 def test_schema_get(client):
-    res = client.get('/api/schemas/1', follow_redirects=True)
-    assert res.status_code == 200
-    assert res.data == b'1'
-    res = client.delete('/api/schemas/1', follow_redirects=True)
-    assert res.status_code == 204
+    schema = {'aaa':1}
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps(schema), 
+            headers={'content-type':'application/caprise+json'})
+    res = client.get(
+            '/api/schemas/{0}'.format(json.loads(res.data.decode('utf-8'))['id']))
+    assert json.loads(res.data.decode('utf-8')) == schema
+
+    schema = {'aaa':2}
+    _id = 'testget'
+    res = client.put(
+            '/api/schemas/{0}'.format(_id), 
+            data=json.dumps(schema), 
+            headers={'content-type':'application/caprise+json'})
+    res = client.get(
+            '/api/schemas/{0}'.format(json.loads(res.data.decode('utf-8'))['id']))
+    assert json.loads(res.data.decode('utf-8')) == schema
 
 def test_resource(client):
     res = client.get('/api/resources', follow_redirects=True)
