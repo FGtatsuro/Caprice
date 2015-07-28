@@ -193,6 +193,7 @@ def test_schema_get(client):
             headers={'content-type':'application/caprise+json'})
     res = client.get(
             '/api/schemas/{0}'.format(json.loads(res.data.decode('utf-8'))['id']))
+    assert res.status_code == 200
     assert json.loads(res.data.decode('utf-8')) == schema
 
     schema = {'aaa':2}
@@ -203,6 +204,7 @@ def test_schema_get(client):
             headers={'content-type':'application/caprise+json'})
     res = client.get(
             '/api/schemas/{0}'.format(json.loads(res.data.decode('utf-8'))['id']))
+    assert res.status_code == 200
     assert json.loads(res.data.decode('utf-8')) == schema
 
 def test_resource(client):
