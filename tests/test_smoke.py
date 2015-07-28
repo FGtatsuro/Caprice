@@ -42,6 +42,22 @@ def test_schema_registration(client):
     assert res.status_code == 201
     assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
 
+def test_schema_registration_with_id(client):
+    _id = 'testid'
+    res = client.put(
+            '/api/schemas/{0}'.format(_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 201
+    assert json.loads(res.data.decode('utf-8'))['id'] == _id
+    res = client.put(
+            '/api/schemas/{0}'.format(_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 400 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'This schema ID is already used.'}})
+
 def test_schema_registration_invalid_header(client):
 
     # No header
@@ -100,6 +116,46 @@ def test_schema_registration_invalid_data(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'Request is invalid.'}})
 
+def test_schema_registration_with_id_invalid_data(client):
+
+    # Violation of JSON Schema Draft4
+    res = client.put(
+            '/api/schemas/violatejsonschema', 
+            data=json.dumps({"type": "obj"}), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Schema is invalid.'}})
+    # No date
+    res = client.put(
+            '/api/schemas/nodata',
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    # Empty date. None/str/json
+    res = client.put(
+            '/api/schemas/nonedata', 
+            data=None,
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    res = client.put(
+            '/api/schemas/emptystr', 
+            data='',
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    res = client.put(
+            '/api/schemas/emptyjson',
+            data=json.dumps({}),
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+
 def test_schema_list(client):
     res = client.get('/api/schemas', follow_redirects=True)
     assert res.status_code == 200
@@ -135,8 +191,6 @@ def test_schema_get(client):
     assert res.data == b'1'
     res = client.delete('/api/schemas/1', follow_redirects=True)
     assert res.status_code == 204
-    res = client.put('/api/schemas/1', follow_redirects=True)
-    assert res.status_code == 405
 
 def test_resource(client):
     res = client.get('/api/resources', follow_redirects=True)
