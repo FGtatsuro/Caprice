@@ -68,7 +68,7 @@ def schema_id(_id):
         res = jsonify({'error': {'message': "Schema isn't found."}})
         res.status_code = 404
         return res
-    # Error handling
+    # TODO: Error handling
     if request.method == 'GET':
         res = jsonify(schema.json)
         res.status_code = 200
