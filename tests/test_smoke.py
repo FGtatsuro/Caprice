@@ -249,6 +249,16 @@ def test_resource_registration(client):
     assert res.status_code == 201
     assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
 
+def test_resource_registration_notfound_schema(client):
+    schema_id = 'notfoundschema'
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 404 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': "Schema isn't found."}})
+
 def test_resource(client):
     res = client.get('/api/resources/1', follow_redirects=True)
     assert res.status_code == 200

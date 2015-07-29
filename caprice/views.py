@@ -82,6 +82,12 @@ def schema_id(_id):
 @api.route('/schemas/<string:schema_id>/resources', methods=['POST'])
 def resource(schema_id):
     if request.method == 'POST':
+        # TODO: DRY. Same process exists in schema API
+        schema = Schema.query.filter(Schema.id==schema_id).first()
+        if not schema:
+            res = jsonify({'error': {'message': "Schema isn't found."}})
+            res.status_code = 404
+            return res
         resource_id = str(uuid.uuid4())
         res = jsonify({'id': resource_id})
         res.status_code = 201
