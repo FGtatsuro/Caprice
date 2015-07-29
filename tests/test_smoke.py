@@ -207,6 +207,25 @@ def test_schema_get(client):
     assert res.status_code == 200
     assert json.loads(res.data.decode('utf-8')) == schema
 
+def test_schema_delete(client):
+    _id = 'notfoundschema'
+    res = client.delete('/api/schemas/{0}'.format(_id))
+    assert res.status_code == 404
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': "Schema isn't found."}})
+
+    _id = 'foundschema'
+    res = client.put(
+            '/api/schemas/{0}'.format(_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/caprise+json'})
+    res = client.delete('/api/schemas/{0}'.format(_id))
+    assert res.status_code == 204
+    res = client.get('/api/schemas/{0}'.format(_id))
+    assert res.status_code == 404
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': "Schema isn't found."}})
+
 def test_resource(client):
     res = client.get('/api/resources', follow_redirects=True)
     assert res.status_code == 200

@@ -45,15 +45,6 @@ def schema():
 
 @api.route('/schemas/<string:_id>', methods=['GET', 'PUT', 'DELETE'])
 def schema_id(_id):
-    if request.method == 'GET':
-        schema = Schema.query.filter(Schema.id==_id).first()
-        if not schema:
-            res = jsonify({'error': {'message': "Schema isn't found."}})
-            res.status_code = 404
-            return res
-        res = jsonify(schema.json)
-        res.status_code = 200
-        return res
     # TODO: DRY. controller is needed?
     if request.method == 'PUT':
         body = request.get_json(silent=True)
@@ -66,13 +57,27 @@ def schema_id(_id):
             schema.save()
             res = jsonify({'id': _id})
             res.status_code = 201
+            return res
         except ValueError as e:
             res = jsonify({'error': {'message': str(e)}})
             res.status_code = 400
+            return res
+
+    schema = Schema.query.filter(Schema.id==_id).first()
+    if not schema:
+        res = jsonify({'error': {'message': "Schema isn't found."}})
+        res.status_code = 404
+        return res
+    # Error handling
+    if request.method == 'GET':
+        res = jsonify(schema.json)
+        res.status_code = 200
+        return res
     if request.method == 'DELETE':
+        schema.delete()
         res = Response('')
         res.status_code = 204
-    return res
+        return res
 
 @api.route('/resources', methods=['GET', 'POST'])
 def resource():
