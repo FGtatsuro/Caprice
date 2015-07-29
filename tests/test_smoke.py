@@ -259,6 +259,29 @@ def test_resource_registration_notfound_schema(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': "Schema isn't found."}})
 
+def test_schema_registration_invalid_header(client):
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
+
+    # No header
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}))
+    assert res.status_code == 400 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    # not 'application/xxx+json'
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'text/plain'})
+    assert res.status_code == 400 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+
 def test_resource(client):
     res = client.get('/api/resources/1', follow_redirects=True)
     assert res.status_code == 200

@@ -83,6 +83,12 @@ def schema_id(_id):
 def resource(schema_id):
     if request.method == 'POST':
         # TODO: DRY. Same process exists in schema API
+        body = request.get_json(silent=True)
+        if not body:
+            res = jsonify({'error': {'message': 'Request is invalid.'}})
+            res.status_code = 400
+            return res
+        # TODO: DRY. Same process exists in schema API
         schema = Schema.query.filter(Schema.id==schema_id).first()
         if not schema:
             res = jsonify({'error': {'message': "Schema isn't found."}})
