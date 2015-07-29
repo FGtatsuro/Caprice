@@ -79,12 +79,13 @@ def schema_id(_id):
         res.status_code = 204
         return res
 
-@api.route('/resources', methods=['GET', 'POST'])
-def resource():
-    res = Response('')
+@api.route('/schemas/<string:schema_id>/resources', methods=['POST'])
+def resource(schema_id):
     if request.method == 'POST':
+        resource_id = str(uuid.uuid4())
+        res = jsonify({'id': resource_id})
         res.status_code = 201
-    return res
+        return res
 
 @api.route('/resources/<int:_id>', methods=['GET', 'PUT', 'DELETE'])
 def resource_id(_id):

@@ -226,12 +226,30 @@ def test_schema_delete(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': "Schema isn't found."}})
 
-def test_resource(client):
-    res = client.get('/api/resources', follow_redirects=True)
-    assert res.status_code == 200
-    res = client.post('/api/resources', follow_redirects=True)
-    assert res.status_code == 201
+def test_resource_registration(client):
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
 
+    # 'application/json'
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 201
+    assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
+
+    # 'application/xxxx+json'
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 201
+    assert uuid.UUID(json.loads(res.data.decode('utf-8'))['id'])    
+
+def test_resource(client):
     res = client.get('/api/resources/1', follow_redirects=True)
     assert res.status_code == 200
     assert res.data == b'1'
