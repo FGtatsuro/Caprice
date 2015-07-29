@@ -52,7 +52,23 @@ class Schema(Base):
         except Exception as e:
             logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
             s.rollback()
+            # TODO: Sophisticated error handling
             raise ValueError('This schema ID is already used.')
+        finally:
+            logger.debug('Close: {0}'.format(self.__class__.__name__))
+            s.close()
+
+    def delete(self):
+        s = Session()
+        s.delete(self)
+        try:
+            logger.debug('Commit: {0}'.format(self))
+            s.commit()
+        except Exception as e:
+            logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
+            s.rollback()
+            # TODO: Sophisticated error handling
+            raise ValueError('Deleting schema is failed.')
         finally:
             logger.debug('Close: {0}'.format(self.__class__.__name__))
             s.close()
