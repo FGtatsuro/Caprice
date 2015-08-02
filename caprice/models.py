@@ -27,7 +27,7 @@ class Schema(Base):
     body = Column(String)
 
     # ID is generated in Python context(=in application)
-    def __init__(self, id=None, json=None):
+    def __init__(self, id, json):
         self.id = id
         self.json = json
         self._validate()
@@ -80,7 +80,7 @@ class Schema(Base):
             raise ValueError('Schema is invalid.')
         try:
             Draft4Validator.check_schema(self.json)
-        except SchemaError as e:
+        except (SchemaError, ValidationError):
             raise ValueError('Schema is invalid.')
 
 # TODO: Schema hierarchy (Ref. http://docs.sqlalchemy.org/en/rel_1_0/orm/inheritance.html)
