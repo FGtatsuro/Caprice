@@ -7,7 +7,7 @@ import json
 import pytest
 
 from caprice import _create_app
-from caprice.models import Schema
+from caprice.models import Schema, Resource
 from caprice.db import Session
 
 @pytest.fixture
@@ -22,6 +22,7 @@ def client(request):
     # TODO: should use mock for DB?
     s = Session()
     s.query(Schema).delete()
+    s.query(Resource).delete()
     s.commit()
     return client
 
@@ -226,12 +227,134 @@ def test_schema_delete(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': "Schema isn't found."}})
 
-def test_resource(client):
-    res = client.get('/api/resources', follow_redirects=True)
-    assert res.status_code == 200
-    res = client.post('/api/resources', follow_redirects=True)
-    assert res.status_code == 201
+def test_resource_registration(client):
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
 
+    # 'application/json'
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 201
+    resource_id = str(uuid.UUID(json.loads(res.data.decode('utf-8'))['id']))
+    resource = Resource.query.filter(Resource.id==resource_id).first()
+    assert resource
+    assert resource.id == resource_id
+
+    # 'application/xxxx+json'
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 201
+    resource_id = str(uuid.UUID(json.loads(res.data.decode('utf-8'))['id']))
+    resource = Resource.query.filter(Resource.id==resource_id).first()
+    assert resource
+    assert resource.id == resource_id
+
+def test_resource_registration_notfound_schema(client):
+    schema_id = 'notfoundschema'
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 404 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': "Schema isn't found."}})
+
+def test_resource_registration_invalid_header(client):
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
+
+    # No header
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}))
+    assert res.status_code == 400 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    # not 'application/xxx+json'
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'text/plain'})
+    assert res.status_code == 400 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+
+def test_resource_registration_invalid_data(client):
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
+
+    # No date
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    # Empty date. None/str/json
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=None,
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data='',
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({}),
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Request is invalid.'}})
+
+    # Violation of parent schema
+    schema = {
+        '$schema': 'http://json-schema.org/draft-04/schema#',
+        'title': 'testschema',
+        'description': 'for test',
+        'type': 'object',
+        'properties': {
+            'hoge': {
+                'type': 'string'
+            }
+        },
+        'required': [
+            'hoge'
+        ]
+    }
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps(schema), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/caprise+json'})
+    assert res.status_code == 400
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'Resource is invalid.'}})
+
+def test_resource(client):
     res = client.get('/api/resources/1', follow_redirects=True)
     assert res.status_code == 200
     assert res.data == b'1'
