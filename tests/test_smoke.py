@@ -354,14 +354,31 @@ def test_resource_registration_invalid_data(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'Resource is invalid.'}})
 
-def test_resource(client):
-    res = client.get('/api/resources/1', follow_redirects=True)
-    assert res.status_code == 200
-    assert res.data == b'1'
-    res = client.delete('/api/resources/1', follow_redirects=True)
-    assert res.status_code == 204
-    res = client.put('/api/resources/1', follow_redirects=True)
-    assert res.status_code == 200
+def test_resource_registration_with_id(client):
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
+
+    resource_id = 'testid'
+    res = client.put(
+            '/api/schemas/{0}/resources/{1}'.format(schema_id, resource_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 201
+    assert json.loads(res.data.decode('utf-8'))['id'] == resource_id
+    resource = Resource.query.filter(Resource.id==resource_id).first()
+    assert resource
+    assert resource.id == resource_id
+
+    res = client.put(
+            '/api/schemas/{0}/resources/{1}'.format(schema_id, resource_id), 
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/json'})
+    assert res.status_code == 400 
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': 'This resource ID is already used.'}})
 
 def test_lock(client):
     res = client.get('/api/locks', follow_redirects=True)
