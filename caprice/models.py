@@ -27,7 +27,7 @@ class Schema(Base):
     body = Column(String)
 
     # ID is generated in Python context(=in application)
-    def __init__(self, id=None, json=None):
+    def __init__(self, id, json):
         self.id = id
         self.json = json
         self._validate()
