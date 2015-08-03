@@ -108,7 +108,7 @@ def resource(schema_id):
             return res
 
 # TODO: How to present parent relations of REST resources?
-@api.route('/schemas/<string:schema_id>/resources/<string:resource_id>', methods=['GET', 'PUT'])
+@api.route('/schemas/<string:schema_id>/resources/<string:resource_id>', methods=['GET', 'PUT', 'DELETE'])
 def resource_id(schema_id, resource_id):
     # TODO: DRY. Same process exists in schema API
     schema = Schema.query.filter(Schema.id==schema_id).first()
@@ -145,6 +145,11 @@ def resource_id(schema_id, resource_id):
     if request.method == 'GET':
         res = jsonify(resource.json)
         res.status_code = 200
+        return res
+    if request.method == 'DELETE':
+        resource.delete()
+        res = Response('')
+        res.status_code = 204
         return res
 
 @api.route('/locks', methods=['GET', 'POST'])

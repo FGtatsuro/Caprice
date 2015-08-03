@@ -412,6 +412,31 @@ def test_resource_get(client):
     assert res.status_code == 200
     assert json.loads(res.data.decode('utf-8')) == resource
 
+def test_resource_delete(client):
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'schema':1}), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
+
+    resource_id = 'notfoundresource'
+    res = client.delete('/api/schemas/{0}/resources/{1}'.format(schema_id, resource_id))
+    assert res.status_code == 404
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': "Resource isn't found."}})
+
+    resource_id = 'foundresource'
+    res = client.put(
+            '/api/schemas/{0}/resources/{1}'.format(schema_id, resource_id),
+            data=json.dumps({'aaa':1}), 
+            headers={'content-type':'application/caprise+json'})
+    res = client.delete('/api/schemas/{0}/resources/{1}'.format(schema_id, resource_id))
+    assert res.status_code == 204
+    res = client.delete('/api/schemas/{0}/resources/{1}'.format(schema_id, resource_id))
+    assert res.status_code == 404
+    assert (json.loads(res.data.decode('utf-8')) 
+            == {'error': {'message': "Resource isn't found."}})
+
 def test_lock(client):
     res = client.get('/api/locks', follow_redirects=True)
     assert res.status_code == 200
