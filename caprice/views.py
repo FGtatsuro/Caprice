@@ -107,20 +107,22 @@ def resource(schema_id):
             res.status_code = 400
             return res
 
-@api.route('/schemas/<string:schema_id>/resources/<string:resource_id>', methods=['PUT'])
+# TODO: How to present parent relations of REST resources?
+@api.route('/schemas/<string:schema_id>/resources/<string:resource_id>', methods=['GET', 'PUT'])
 def resource_id(schema_id, resource_id):
+    # TODO: DRY. Same process exists in schema API
+    schema = Schema.query.filter(Schema.id==schema_id).first()
+    if not schema:
+        res = jsonify({'error': {'message': "Schema isn't found."}})
+        res.status_code = 404
+        return res
+
     # TODO: DRY. controller is needed?
     if request.method == 'PUT':
         body = request.get_json(silent=True)
         if not body:
             res = jsonify({'error': {'message': 'Request is invalid.'}})
             res.status_code = 400
-            return res
-        # TODO: DRY. Same process exists in schema API
-        schema = Schema.query.filter(Schema.id==schema_id).first()
-        if not schema:
-            res = jsonify({'error': {'message': "Schema isn't found."}})
-            res.status_code = 404
             return res
         try:
             resource = Resource(resource_id, body, schema)
@@ -133,6 +135,17 @@ def resource_id(schema_id, resource_id):
             res = jsonify({'error': {'message': str(e)}})
             res.status_code = 400
             return res
+
+    resource = Resource.query.filter(Resource.id==resource_id).first()
+    if not resource:
+        res = jsonify({'error': {'message': "Resource isn't found."}})
+        res.status_code = 404
+        return res
+    # TODO: Error handling
+    if request.method == 'GET':
+        res = jsonify(resource.json)
+        res.status_code = 200
+        return res
 
 @api.route('/locks', methods=['GET', 'POST'])
 def lock():
