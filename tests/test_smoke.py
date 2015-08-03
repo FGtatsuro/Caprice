@@ -380,6 +380,38 @@ def test_resource_registration_with_id(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'This resource ID is already used.'}})
 
+def test_schema_get(client):
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'schema':1}), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
+
+    resource = {'resource':1}
+    res = client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps(resource), 
+            headers={'content-type':'application/caprise+json'})
+    res = client.get(
+            '/api/schemas/{0}/resources/{1}'.format(
+                schema_id,
+                json.loads(res.data.decode('utf-8'))['id']))
+    assert res.status_code == 200
+    assert json.loads(res.data.decode('utf-8')) == resource
+
+    resource = {'resource':2}
+    resource_id = 'testget'
+    res = client.put(
+            '/api/schemas/{0}/resources/{1}'.format(schema_id, resource_id),
+            data=json.dumps(resource), 
+            headers={'content-type':'application/caprise+json'})
+    res = client.get(
+            '/api/schemas/{0}/resources/{1}'.format(
+                schema_id,
+                resource_id))
+    assert res.status_code == 200
+    assert json.loads(res.data.decode('utf-8')) == resource
+
 def test_lock(client):
     res = client.get('/api/locks', follow_redirects=True)
     assert res.status_code == 200
