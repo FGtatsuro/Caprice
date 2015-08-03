@@ -380,7 +380,7 @@ def test_resource_registration_with_id(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'This resource ID is already used.'}})
 
-def test_schema_get(client):
+def test_resource_get(client):
     res = client.post(
             '/api/schemas', 
             data=json.dumps({'schema':1}), 
