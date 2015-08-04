@@ -79,20 +79,27 @@ def schema_id(_id):
         res.status_code = 204
         return res
 
-@api.route('/schemas/<string:schema_id>/resources', methods=['POST'])
+@api.route('/schemas/<string:schema_id>/resources', methods=['GET', 'POST'])
 def resource(schema_id):
+    # TODO: DRY. Same process exists in schema API
+    schema = Schema.query.filter(Schema.id==schema_id).first()
+    if not schema:
+        res = jsonify({'error': {'message': "Schema isn't found."}})
+        res.status_code = 404
+        return res
+    # TODO: controller is needed?
+    if request.method == 'GET':
+        # TODO: JSON-Model mapping
+        # TODO: Pagination
+        resources = Resource.query.filter(Resource.schema_id==schema_id).all()
+        res = jsonify({'resources': [{'id': r.id, 'body': r.json} for r in resources]})
+        return res
     if request.method == 'POST':
         # TODO: DRY. Same process exists in schema API
         body = request.get_json(silent=True)
         if not body:
             res = jsonify({'error': {'message': 'Request is invalid.'}})
             res.status_code = 400
-            return res
-        # TODO: DRY. Same process exists in schema API
-        schema = Schema.query.filter(Schema.id==schema_id).first()
-        if not schema:
-            res = jsonify({'error': {'message': "Schema isn't found."}})
-            res.status_code = 404
             return res
         try:
             resource_id = str(uuid.uuid4())
