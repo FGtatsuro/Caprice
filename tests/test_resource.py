@@ -179,6 +179,79 @@ def test_resource_registration_with_id(client):
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'This resource ID is already used.'}})
 
+def test_resource_list(client):
+    schema = {
+        '$schema': 'http://json-schema.org/draft-04/schema#',
+        'title': 'testschema',
+        'description': 'for test',
+        'type': 'object',
+        'properties': {
+            'hoge': {
+                'type': 'string'
+            }
+        },
+        'required': [
+            'field1'
+        ]
+    }
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps(schema), 
+            headers={'content-type':'application/json'})
+    schema_id = json.loads(res.data.decode('utf-8'))['id']
+
+    res = client.get('/api/schemas/{0}/resources'.format(schema_id))
+    assert res.status_code == 200
+    assert len(json.loads(res.data.decode('utf-8'))['resources']) == 0
+
+    resource = {'field1': 1}
+    client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps(resource), 
+            headers={'content-type':'application/caprise+json'})
+
+    res = client.get('/api/schemas/{0}/resources'.format(schema_id))
+    assert res.status_code == 200
+    resources = json.loads(res.data.decode('utf-8'))['resources']
+    assert len(resources) == 1
+    # TODO: JSONSchema validation
+    assert resources[0]['id']
+    assert resources[0]['body'] == resource
+
+    resource = {'field1': 2}
+    client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps(resource), 
+            headers={'content-type':'application/caprise+json'})
+    # Failed request 
+    resource = {'bbb':1}
+    client.post(
+            '/api/schemas/{0}/resources'.format(schema_id), 
+            data=json.dumps(resource), 
+            headers={'content-type':'application/caprise+json'})
+
+    res = client.get('/api/schemas/{0}/resources'.format(schema_id))
+    assert res.status_code == 200
+    resources = json.loads(res.data.decode('utf-8'))['resources']
+    assert len(resources) == 2
+
+    # Another schema doesn't affect list result
+    res = client.post(
+            '/api/schemas', 
+            data=json.dumps({'a': 1}), 
+            headers={'content-type':'application/json'})
+    another_schema_id = json.loads(res.data.decode('utf-8'))['id']
+    client.post(
+            '/api/schemas/{0}/resources'.format(another_schema_id), 
+            data=json.dumps({'a': 1}), 
+            headers={'content-type':'application/caprise+json'})
+    res = client.get('/api/schemas/{0}/resources'.format(schema_id))
+    resources = json.loads(res.data.decode('utf-8'))['resources']
+    assert len(resources) == 2
+    res = client.get('/api/schemas/{0}/resources'.format(another_schema_id))
+    resources = json.loads(res.data.decode('utf-8'))['resources']
+    assert len(resources) == 1
+
 def test_resource_get(client):
     res = client.post(
             '/api/schemas', 
