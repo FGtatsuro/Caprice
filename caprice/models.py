@@ -5,7 +5,7 @@ import json
 from logging import getLogger
 
 from jsonschema import Draft4Validator, SchemaError, ValidationError, validate
-from sqlalchemy import Column, String, ForeignKey
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Table
 from sqlalchemy.orm import relationship, backref
 
 from .db import Base, Session
@@ -13,7 +13,7 @@ from .db import Base, Session
 # Handlers of this logger depends on Flask application
 logger = getLogger(__name__)
 
-__all__ = ['Schema', 'Resource']
+__all__ = ['Schema', 'Resource', 'Lock']
 
 class Schema(Base):
 
@@ -156,3 +156,39 @@ class Resource(Base):
             validate(self.json, self.schema.json)
         except (SchemaError, ValidationError):
             raise ValueError('Resource is invalid.')
+
+class Lock(Base):
+
+    __tablename__ = 'locks'
+
+    id = Column(Integer, Sequence('lock_id_seq'), primary_key=True)
+    # TODO: whether spec allows that some locks acquire same resource at the same time.
+    resources = relationship('Resource', secondary='resource_lock_association', backref='locks')
+
+    def __init__(self, resources):
+        self.resources = resources
+
+    # TODO: Use contextmanager. Ref. http://docs.sqlalchemy.org/en/rel_1_0/orm/session_basics.html
+    # TODO DRY
+    def save(self):
+        s = Session()
+        s.add(self)
+        try:
+            logger.debug('Commit: {0}'.format(self))
+            s.commit()
+            # TODO: Adapt refresh for other schemas
+            s.refresh(self)
+        except Exception as e:
+            logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
+            s.rollback()
+            # TODO: Sophisticated error handling
+            # TODO: Handle other reasons
+            raise ValueError('This lock ID is already used.')
+        finally:
+            logger.debug('Close: {0}'.format(self.__class__.__name__))
+            s.close()
+
+resource_lock_association = Table('resource_lock_association', Base.metadata,
+    Column('resource_id', String, ForeignKey('resources.id')),
+    Column('lock_id', Integer, ForeignKey('locks.id'))
+)
