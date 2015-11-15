@@ -161,10 +161,29 @@ def resource_id(schema_id, resource_id):
 
 @api.route('/locks', methods=['GET', 'POST'])
 def lock():
-    res = Response('')
     if request.method == 'POST':
-        res.status_code = 201
-    return res
+        body = request.get_json(silent=True)
+        if not body and body['resources']:
+            res = jsonify({'error': {'message': 'Request is invalid.'}})
+            res.status_code = 400
+            return res
+        resources = Resource.query.filter(Resource.id.in_(body['resources'])).all()
+        for r_id in body['resources']:
+            if not (r_id in [resource.id for resource in resources]):
+                res = jsonify({'error': {'message': "Resource {0} isn't found.".format(r_id)}})
+                res.status_code = 404
+                return res
+        try:
+            lock = Lock(resources)
+            lock.save()
+            # TODO: JSON-Model mapping
+            res = jsonify({'id': lock.id})
+            res.status_code = 201
+            return res
+        except ValueError as e:
+            res = jsonify({'error': {'message': str(e)}})
+            res.status_code = 400
+            return res
 
 @api.route('/locks/<int:_id>', methods=['GET', 'DELETE'])
 def lock_id(_id):
