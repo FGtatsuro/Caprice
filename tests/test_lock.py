@@ -21,11 +21,12 @@ def client(request):
 
     # CleanUp
     # TODO: should use mock for DB?
-    s = Session()
-    s.query(Schema).delete()
-    s.query(Resource).delete()
-    s.query(Lock).delete()
-    s.commit()
+    Session()
+    Session.query(Schema).delete()
+    Session.query(Resource).delete()
+    Session.query(Lock).delete()
+    Session.commit()
+    Session.remove()
     return client
 
 def test_lock_registration(client):
@@ -45,6 +46,7 @@ def test_lock_registration(client):
             headers={'content-type':'application/json'})
 
     # 'application/json'
+    Session()
     schema = Schema.query.options(joinedload(Schema.resources)).filter(Schema.id==schema_id).first()
     schema_resources = schema.resources
     for r in schema_resources:
@@ -62,3 +64,5 @@ def test_lock_registration(client):
     assert len(lock.resources) == 2
     assert lock.resources[0].json in [r.json for r in schema_resources]
     assert lock.resources[1].json in [r.json for r in schema_resources]
+    # TODO: teardown
+    Session.remove()

@@ -20,9 +20,10 @@ def client(request):
 
     # CleanUp
     # TODO: should use mock for DB?
-    s = Session()
-    s.query(Schema).delete()
-    s.commit()
+    Session()
+    Session.query(Schema).delete()
+    Session.commit()
+    Session.remove()
     return client
 
 def test_schema_registration(client):
@@ -54,7 +55,7 @@ def test_schema_registration_with_id(client):
             '/api/schemas/{0}'.format(_id), 
             data=json.dumps({'aaa':1}), 
             headers={'content-type':'application/json'})
-    assert res.status_code == 400 
+    assert res.status_code == 409
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'This schema ID is already used.'}})
 

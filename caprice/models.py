@@ -43,36 +43,33 @@ class Schema(Base):
     def __repr__(self):
         return "<{0}: '{1}'>".format(self.__class__.__name__, self.body)
 
-    # TODO: Use contextmanager. Ref. http://docs.sqlalchemy.org/en/rel_1_0/orm/session_basics.html
     def save(self):
-        s = Session()
-        s.add(self)
-        try:
-            logger.debug('Commit: {0}'.format(self))
-            s.commit()
-        except Exception as e:
-            logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
-            s.rollback()
-            # TODO: Sophisticated error handling
-            raise ValueError('This schema ID is already used.')
-        finally:
-            logger.debug('Close: {0}'.format(self.__class__.__name__))
-            s.close()
+        Session.add(self)
+        #try:
+        #    logger.debug('Commit: {0}'.format(self))
+        #    s.commit()
+        #except Exception as e:
+        #    logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
+        #    s.rollback()
+        #    # TODO: Sophisticated error handling
+        #    raise ValueError('This schema ID is already used.')
+        #finally:
+        #    logger.debug('Close: {0}'.format(self.__class__.__name__))
+        #    s.close()
 
     def delete(self):
-        s = Session()
-        s.delete(self)
-        try:
-            logger.debug('Commit: {0}'.format(self))
-            s.commit()
-        except Exception as e:
-            logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
-            s.rollback()
-            # TODO: Sophisticated error handling
-            raise ValueError('Deleting schema is failed.')
-        finally:
-            logger.debug('Close: {0}'.format(self.__class__.__name__))
-            s.close()
+        Session.delete(self)
+        #try:
+        #    logger.debug('Commit: {0}'.format(self))
+        #    s.commit()
+        #except Exception as e:
+        #    logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
+        #    s.rollback()
+        #    # TODO: Sophisticated error handling
+        #    raise ValueError('Deleting schema is failed.')
+        #finally:
+        #    logger.debug('Close: {0}'.format(self.__class__.__name__))
+        #    s.close()
 
     def _validate(self):
         # Draft4Validator accepts empty JSON, but we don't want to accept it.
@@ -119,34 +116,32 @@ class Resource(Base):
 
      # TODO: Use contextmanager. Ref. http://docs.sqlalchemy.org/en/rel_1_0/orm/session_basics.html
     def save(self):
-        s = Session()
-        s.add(self)
-        try:
-            logger.debug('Commit: {0}'.format(self))
-            s.commit()
-        except Exception as e:
-            logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
-            s.rollback()
-            # TODO: Sophisticated error handling
-            raise ValueError('This resource ID is already used.')
-        finally:
-            logger.debug('Close: {0}'.format(self.__class__.__name__))
-            s.close()
+        Session.add(self)
+        #try:
+        #    logger.debug('Commit: {0}'.format(self))
+        #    s.commit()
+        #except Exception as e:
+        #    logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
+        #    s.rollback()
+        #    # TODO: Sophisticated error handling
+        #    raise ValueError('This resource ID is already used.')
+        #finally:
+        #    logger.debug('Close: {0}'.format(self.__class__.__name__))
+        #    s.close()
 
     def delete(self):
-        s = Session()
-        s.delete(self)
-        try:
-            logger.debug('Commit: {0}'.format(self))
-            s.commit()
-        except Exception as e:
-            logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
-            s.rollback()
-            # TODO: Sophisticated error handling
-            raise ValueError('Deleting resource is failed.')
-        finally:
-            logger.debug('Close: {0}'.format(self.__class__.__name__))
-            s.close()
+        Session.delete(self)
+        #try:
+        #    logger.debug('Commit: {0}'.format(self))
+        #    s.commit()
+        #except Exception as e:
+        #    logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
+        #    s.rollback()
+        #    # TODO: Sophisticated error handling
+        #    raise ValueError('Deleting resource is failed.')
+        #finally:
+        #    logger.debug('Close: {0}'.format(self.__class__.__name__))
+        #    s.close()
 
     def _validate(self):
         # Draft4Validator accepts empty JSON, but we don't want to accept it.
@@ -171,22 +166,21 @@ class Lock(Base):
     # TODO: Use contextmanager. Ref. http://docs.sqlalchemy.org/en/rel_1_0/orm/session_basics.html
     # TODO DRY
     def save(self):
-        s = Session()
-        s.add(self)
-        try:
-            logger.debug('Commit: {0}'.format(self))
-            s.commit()
-            # TODO: Adapt refresh for other schemas
-            s.refresh(self)
-        except Exception as e:
-            logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
-            s.rollback()
-            # TODO: Sophisticated error handling
-            # TODO: Handle other reasons
-            raise ValueError('This lock ID is already used.')
-        finally:
-            logger.debug('Close: {0}'.format(self.__class__.__name__))
-            s.close()
+        Session.add(self)
+        #try:
+        #    logger.debug('Commit: {0}'.format(self))
+        #    s.commit()
+        #    # TODO: Adapt refresh for other schemas
+        #    s.refresh(self)
+        #except Exception as e:
+        #    logger.error('Rollback: {0}. Error details: {1}'.format(self, e))
+        #    s.rollback()
+        #    # TODO: Sophisticated error handling
+        #    # TODO: Handle other reasons
+        #    raise ValueError('This lock ID is already used.')
+        #finally:
+        #    logger.debug('Close: {0}'.format(self.__class__.__name__))
+        #    s.close()
 
 resource_lock_association = Table('resource_lock_association', Base.metadata,
     Column('resource_id', String, ForeignKey('resources.id')),

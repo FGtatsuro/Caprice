@@ -8,7 +8,10 @@ from logging import getLogger
 from flask import Blueprint, Response
 from flask import jsonify, render_template, redirect, url_for, request
 from jsonschema import Draft4Validator, SchemaError
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import FlushError
 
+from .db import Session
 from .models import *
 
 # Handlers of this logger depends on Flask application
@@ -18,6 +21,8 @@ api = Blueprint('api', __name__)
 
 @api.route('/schemas', methods=['GET', 'POST'])
 def schema():
+    # TODO: Bind this call to request start event
+    Session()
     # TODO: controller is needed?
     if request.method == 'GET':
         # TODO: JSON-Model mapping
@@ -35,16 +40,23 @@ def schema():
             _id = str(uuid.uuid4())
             schema = Schema(id=_id, json=body)
             schema.save()
+            Session.commit()
+            Session.refresh(schema)
             # TODO: JSON-Model mapping
             res = jsonify({'id': _id})
             res.status_code = 201
-        except ValueError as e:
+        except Exception as e:
+            Session.rollback()
+            # TODO: Error handler
+            logger.error(str(e))
             res = jsonify({'error': {'message': str(e)}})
             res.status_code = 400
         return res
 
 @api.route('/schemas/<string:_id>', methods=['GET', 'PUT', 'DELETE'])
 def schema_id(_id):
+    # TODO: Bind this call to request start event
+    Session()
     # TODO: DRY. controller is needed?
     if request.method == 'PUT':
         body = request.get_json(silent=True)
@@ -55,10 +67,21 @@ def schema_id(_id):
         try:
             schema = Schema(id=_id, json=body)
             schema.save()
+            Session.commit()
+            Session.refresh(schema)
             res = jsonify({'id': _id})
             res.status_code = 201
             return res
-        except ValueError as e:
+        # TODO: Error handler
+        except IntegrityError as e:
+            Session.rollback()
+            logger.error(str(e))
+            res = jsonify({'error': {'message': 'This schema ID is already used.'}})
+            res.status_code = 409
+            return res
+        except Exception as e:
+            Session.rollback()
+            logger.error(str(e))
             res = jsonify({'error': {'message': str(e)}})
             res.status_code = 400
             return res
@@ -75,12 +98,15 @@ def schema_id(_id):
         return res
     if request.method == 'DELETE':
         schema.delete()
+        Session.commit()
         res = Response('')
         res.status_code = 204
         return res
 
 @api.route('/schemas/<string:schema_id>/resources', methods=['GET', 'POST'])
 def resource(schema_id):
+    # TODO: Bind this call to request start event
+    Session()
     # TODO: DRY. Same process exists in schema API
     schema = Schema.query.filter(Schema.id==schema_id).first()
     if not schema:
@@ -105,11 +131,16 @@ def resource(schema_id):
             resource_id = str(uuid.uuid4())
             resource = Resource(resource_id, body, schema)
             resource.save()
+            Session.commit()
+            Session.refresh(resource)
             # TODO: JSON-Model mapping
             res = jsonify({'id': resource_id})
             res.status_code = 201
             return res
-        except ValueError as e:
+        except Exception as e:
+            Session.rollback()
+            # TODO: Error handler
+            logger.error(str(e))
             res = jsonify({'error': {'message': str(e)}})
             res.status_code = 400
             return res
@@ -117,6 +148,8 @@ def resource(schema_id):
 # TODO: How to present parent relations of REST resources?
 @api.route('/schemas/<string:schema_id>/resources/<string:resource_id>', methods=['GET', 'PUT', 'DELETE'])
 def resource_id(schema_id, resource_id):
+    # TODO: Bind this call to request start event
+    Session()
     # TODO: DRY. Same process exists in schema API
     schema = Schema.query.filter(Schema.id==schema_id).first()
     if not schema:
@@ -134,11 +167,22 @@ def resource_id(schema_id, resource_id):
         try:
             resource = Resource(resource_id, body, schema)
             resource.save()
+            Session.commit()
+            Session.refresh(resource)
             # TODO: JSON-Model mapping
             res = jsonify({'id': resource_id})
             res.status_code = 201
             return res
-        except ValueError as e:
+        # TODO: Error handler
+        except FlushError as e:
+            Session.rollback()
+            logger.error(str(e))
+            res = jsonify({'error': {'message': 'This resource ID is already used.'}})
+            res.status_code = 409
+            return res
+        except Exception as e:
+            Session.rollback()
+            logger.error(str(e))
             res = jsonify({'error': {'message': str(e)}})
             res.status_code = 400
             return res
@@ -155,12 +199,15 @@ def resource_id(schema_id, resource_id):
         return res
     if request.method == 'DELETE':
         resource.delete()
+        Session.commit()
         res = Response('')
         res.status_code = 204
         return res
 
 @api.route('/locks', methods=['GET', 'POST'])
 def lock():
+    # TODO: Bind this call to request start event
+    Session()
     if request.method == 'POST':
         body = request.get_json(silent=True)
         if not body and body['resources']:
@@ -173,14 +220,20 @@ def lock():
                 res = jsonify({'error': {'message': "Resource {0} isn't found.".format(r_id)}})
                 res.status_code = 404
                 return res
+        # TODO: Move this logic to Service layer
         try:
             lock = Lock(resources)
             lock.save()
+            Session.commit()
+            Session.refresh(lock)
             # TODO: JSON-Model mapping
             res = jsonify({'id': lock.id})
             res.status_code = 201
             return res
-        except ValueError as e:
+        except Exception as e:
+            Session.rollback()
+            # TODO: Error handler
+            logger.error(str(e))
             res = jsonify({'error': {'message': str(e)}})
             res.status_code = 400
             return res

@@ -20,13 +20,15 @@ def client(request):
 
     # CleanUp
     # TODO: should use mock for DB?
-    s = Session()
-    s.query(Schema).delete()
-    s.query(Resource).delete()
-    s.commit()
+    Session()
+    Session.query(Schema).delete()
+    Session.query(Resource).delete()
+    Session.commit()
+    Session.remove()
     return client
 
 def test_resource_registration(client):
+    Session()
     res = client.post(
             '/api/schemas', 
             data=json.dumps({'aaa':1}), 
@@ -54,6 +56,8 @@ def test_resource_registration(client):
     resource = Resource.query.filter(Resource.id==resource_id).first()
     assert resource
     assert resource.id == resource_id
+    # TODO: teardown
+    Session.remove()
 
 def test_resource_registration_notfound_schema(client):
     schema_id = 'notfoundschema'
@@ -154,6 +158,7 @@ def test_resource_registration_invalid_data(client):
             == {'error': {'message': 'Resource is invalid.'}})
 
 def test_resource_registration_with_id(client):
+    Session()
     res = client.post(
             '/api/schemas', 
             data=json.dumps({'aaa':1}), 
@@ -175,9 +180,11 @@ def test_resource_registration_with_id(client):
             '/api/schemas/{0}/resources/{1}'.format(schema_id, resource_id), 
             data=json.dumps({'aaa':1}), 
             headers={'content-type':'application/json'})
-    assert res.status_code == 400 
+    assert res.status_code == 409 
     assert (json.loads(res.data.decode('utf-8')) 
             == {'error': {'message': 'This resource ID is already used.'}})
+    # TODO: teardown
+    Session.remove()
 
 def test_resource_list(client):
     schema = {

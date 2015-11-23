@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from contextlib import contextmanager
 from logging import getLogger
 
 from sqlalchemy import create_engine
