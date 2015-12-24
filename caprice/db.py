@@ -29,5 +29,6 @@ def init(app):
 
     @app.teardown_appcontext
     def shutdown(exception):
+        print('test')
         logger.debug('Clear session.')
         Session.remove()

@@ -21,8 +21,6 @@ api = Blueprint('api', __name__)
 
 @api.route('/schemas', methods=['GET', 'POST'])
 def schema():
-    # TODO: Bind this call to request start event
-    Session()
     # TODO: controller is needed?
     if request.method == 'GET':
         # TODO: JSON-Model mapping
@@ -55,8 +53,6 @@ def schema():
 
 @api.route('/schemas/<string:_id>', methods=['GET', 'PUT', 'DELETE'])
 def schema_id(_id):
-    # TODO: Bind this call to request start event
-    Session()
     # TODO: DRY. controller is needed?
     if request.method == 'PUT':
         body = request.get_json(silent=True)
@@ -105,8 +101,6 @@ def schema_id(_id):
 
 @api.route('/schemas/<string:schema_id>/resources', methods=['GET', 'POST'])
 def resource(schema_id):
-    # TODO: Bind this call to request start event
-    Session()
     # TODO: DRY. Same process exists in schema API
     schema = Schema.query.filter(Schema.id==schema_id).first()
     if not schema:
@@ -148,8 +142,6 @@ def resource(schema_id):
 # TODO: How to present parent relations of REST resources?
 @api.route('/schemas/<string:schema_id>/resources/<string:resource_id>', methods=['GET', 'PUT', 'DELETE'])
 def resource_id(schema_id, resource_id):
-    # TODO: Bind this call to request start event
-    Session()
     # TODO: DRY. Same process exists in schema API
     schema = Schema.query.filter(Schema.id==schema_id).first()
     if not schema:
@@ -206,8 +198,6 @@ def resource_id(schema_id, resource_id):
 
 @api.route('/locks', methods=['GET', 'POST'])
 def lock():
-    # TODO: Bind this call to request start event
-    Session()
     if request.method == 'POST':
         body = request.get_json(silent=True)
         if not body and body['resources']:
